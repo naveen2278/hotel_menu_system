@@ -1,0 +1,12 @@
+{
+  "name": "hotel-menu-system",
+  "version": "1.0.0",
+  "description": "Premium Hotel Menu System",
+  "scripts": {
+    "start": "cd backend && npm start",
+    "setup": "cd backend && node setup.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

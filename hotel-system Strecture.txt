@@ -1,0 +1,36 @@
+hotel-system-pro/
+│
+├── backend/
+│   ├── server.js
+│   ├── config/db.js
+│   ├── models/
+│   │   ├── User.js
+│   │   ├── Menu.js
+│   │   ├── Order.js
+│   │   ├── Table.js
+│   │
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── menuRoutes.js
+│   │   ├── orderRoutes.js
+│   │   ├── tableRoutes.js
+│   │
+│   ├── middleware/auth.js
+│   ├── utils/pdfGenerator.js
+│   ├── sockets/orderSocket.js
+│
+├── frontend-web/
+│   ├── index.html
+│   ├── admin.html
+│   ├── dashboard.html
+│   ├── app.js
+│   ├── admin.js
+│
+├── mobile-app/ (React Native)
+│   ├── App.js
+│   ├── screens/
+│   │   ├── MenuScreen.js
+│   │   ├── CartScreen.js
+│   │   ├── OrderTracking.js
+│
+├── package.json

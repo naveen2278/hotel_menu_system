@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NightEat - Dashboard</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/admin-extra.css" />
+</head>
+<body style="background: #f8fafc;">
+  <div class="dashboard-container">
+    <header class="dashboard-header">
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <img src="pagene.png" alt="NightEat Logo" style="width: 45px; height: auto;" />
+        <h1 style="font-family: 'Outfit'; color: var(--text-main); margin: 0;">Dashboard</h1>
+      </div>
+      <div style="display: flex; gap: 15px;">
+        <button id="showMenuBtn" class="filter-btn active" onclick="switchSection('menu')">Menu</button>
+        <button id="showOrdersBtn" class="filter-btn" onclick="switchSection('orders')">Orders</button>
+      </div>
+      <button id="logoutBtn" class="logout-btn">Logout</button>
+    </header>
+
+    <!-- Menu Management Section -->
+    <div id="menuSection" class="dashboard-grid">
+      <!-- Left Column: Add New Item -->
+      <aside class="dashboard-card reveal">
+        <h2>Add New Dish</h2>
+        <form id="addItemForm" enctype="multipart/form-data">
+          <div class="form-group">
+            <label>Item Name</label>
+            <input type="text" id="itemName" placeholder="e.g. Paneer Tikka" required />
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="description" rows="3" placeholder="Describe the flavors..."></textarea>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+              <label>Price (₹)</label>
+              <input type="number" id="price" step="0.01" placeholder="0.00" required />
+            </div>
+            <div class="form-group">
+              <label>Category</label>
+              <select id="category" required>
+                <option value="Veg">Veg</option>
+                <option value="Non-Veg">Non-Veg</option>
+                <option value="Fresh Juice">Fresh Juice</option>
+                <option value="Soda">Soda</option>
+                <option value="Ice Cream">Ice Cream</option>
+                <option value="Desserts">Desserts</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Upload Image</label>
+            <input type="file" id="itemImage" accept="image/*" />
+          </div>
+          <div style="display: flex; gap: 20px; margin-bottom: 25px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer;">
+              <input type="checkbox" id="isSpecial" style="width: 18px; height: 18px; accent-color: var(--primary);" /> Special
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer;">
+              <input type="checkbox" id="isAvailable" checked style="width: 18px; height: 18px; accent-color: var(--primary);" /> Available
+            </label>
+          </div>
+          <button type="submit" class="primary-btn">Create Item</button>
+        </form>
+        <p id="statusMessage" class="message-text"></p>
+      </aside>
+
+      <!-- Right Column: Menu Items List -->
+      <section class="dashboard-card reveal" style="animation-delay: 0.1s;">
+        <h2>Manage Menu Items</h2>
+        <div id="adminMenuList" class="admin-menu-list">
+          <!-- Items will be injected here as modern list cards -->
+          <p style="text-align: center; color: var(--text-muted); padding: 40px;">Loading your menu...</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- Orders Management Section -->
+    <div id="ordersSection" style="display: none;">
+      <section class="dashboard-card reveal">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 20px;">
+          <h2 style="margin:0;">Incoming Orders</h2>
+          
+          <div class="date-filter-wrapper">
+            <div class="date-input-group">
+              <span class="date-label">Select Date</span>
+              <input type="date" id="orderDate" class="date-input" onchange="loadOrders()" />
+            </div>
+            <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.1);"></div>
+          </div>
+
+          <button class="refresh-btn" onclick="loadOrders()">
+            <span class="refresh-icon">🔄</span> Refresh
+          </button>
+        </div>
+        <div id="adminOrdersList" class="admin-menu-list">
+          <p style="text-align: center; color: var(--text-muted); padding: 40px;">No orders yet.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Edit Dish Details</h2>
+        <button class="close-btn" onclick="closeEditModal()">&times;</button>
+      </div>
+      
+      <form id="editItemForm" enctype="multipart/form-data">
+        <input type="hidden" id="editItemId" />
+        
+        <div class="form-group">
+          <label>Item Name</label>
+          <input type="text" id="editItemName" placeholder="Dish name..." required />
+        </div>
+        
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="editDescription" rows="3" placeholder="Describe the flavors..."></textarea>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Price (₹)</label>
+            <input type="number" id="editPrice" step="0.01" placeholder="0.00" required />
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="editCategory" required>
+              <option value="Veg">Veg</option>
+              <option value="Non-Veg">Non-Veg</option>
+              <option value="Fresh Juice">Fresh Juice</option>
+              <option value="Soda">Soda</option>
+              <option value="Ice Cream">Ice Cream</option>
+              <option value="Desserts">Desserts</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Update Image</label>
+          <div class="image-upload-wrapper">
+            <input type="file" id="editItemImage" accept="image/*" />
+            <div id="currentImagePreview" class="image-preview-container"></div>
+            <label class="remove-image-label">
+              <input type="checkbox" id="removeImage" />
+              <span>Remove existing image</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-checkbox-row">
+          <label class="custom-checkbox">
+            <input type="checkbox" id="editIsSpecial" />
+            <span>Special</span>
+          </label>
+          <label class="custom-checkbox">
+            <input type="checkbox" id="editIsAvailable" />
+            <span>Available</span>
+          </label>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="submit" class="primary-btn">Save Changes</button>
+          <button type="button" class="cancel-btn" onclick="closeEditModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Quick Add Item Modal (for Add-ons) -->
+  <div id="quickAddModal" class="modal">
+    <div class="modal-content" style="max-width: 400px; background: #0f172a;">
+      <div class="modal-header">
+        <h2 style="color: var(--primary);">➕ Quick Add Item</h2>
+        <button class="small-btn delete-btn" onclick="closeQuickAdd()">&times;</button>
+      </div>
+      <form id="quickAddForm" style="padding: 20px;">
+        <input type="hidden" id="quickAddOrderId" />
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label style="color: var(--text-main); display: block; margin-bottom: 8px;">Select Food / Add-on</label>
+          <select id="quickAddItemSelect" style="width: 100%; padding: 12px; border-radius: 8px; background: #1e293b; color: white; border: 1px solid #334155;" required>
+            <!-- Menu items populated via JS -->
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 25px;">
+          <label style="color: var(--text-main); display: block; margin-bottom: 8px;">Quantity</label>
+          <input type="number" id="quickAddQuantity" value="1" min="1" style="width: 100%; padding: 12px; border-radius: 8px; background: #1e293b; color: white; border: 1px solid #334155;" required />
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <button type="submit" class="primary-btn" style="flex: 1;">Add to Order</button>
+          <button type="button" class="small-btn edit-btn" onclick="closeQuickAdd()" style="padding: 12px 20px;">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
