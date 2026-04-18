@@ -212,9 +212,9 @@ function displayOrders(orders) {
         <!-- Card Header -->
         <div class="order-card-header">
           <div style="display: flex; align-items: center; gap: 18px;">
-            <div class="table-badge">${tableNum}</div>
+            <div class="table-badge ${order.order_type === 'Parcel' ? 'parcel-badge' : ''}">${order.order_type === 'Parcel' ? 'P' : tableNum}</div>
             <div class="order-meta">
-              <div class="order-header-title">TABLE ${tableNum}</div>
+              <div class="order-header-title">${order.order_type === 'Parcel' ? 'PARCEL' : 'TABLE ' + tableNum} ${order.customer_name ? '• ' + order.customer_name : ''}</div>
               <div class="order-id-label">Order #${order.id} • ${date}</div>
             </div>
           </div>
@@ -248,10 +248,10 @@ function displayOrders(orders) {
         
         <!-- Card Items List -->
         <div class="order-items-container">
-          <div>
+          <div style="padding: 10px 0;">
             ${items.map(item => `
               <div class="order-item-row">
-                <div style="display: flex; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 12px;">
                   <span class="order-item-qty">${item.quantity}x</span>
                   <span style="font-weight: 500; color: var(--text-main);">${item.item_name}</span>
                 </div>
@@ -264,8 +264,8 @@ function displayOrders(orders) {
           </div>
           
           <!-- Grand Total Bar -->
-          <div class="order-total-bar">
-            <span class="order-total-label">Total Amount Due</span>
+          <div class="order-total-refined">
+            <span class="order-total-label">TOTAL AMOUNT DUE</span>
             <span class="order-total-value">₹${Number(order.total_amount).toFixed(2)}</span>
           </div>
         </div>
@@ -412,8 +412,132 @@ async function deleteItem(id) {
 window.onclick = function (event) {
   const editModal = document.getElementById('editModal');
   const quickModal = document.getElementById('quickAddModal');
+  const takeOrderModal = document.getElementById('takeOrderModal');
   if (editModal && event.target === editModal) closeEditModal();
   if (quickModal && event.target === quickModal) closeQuickAdd();
+  if (takeOrderModal && event.target === takeOrderModal) closeTakeOrderModal();
+}
+
+// --- TAKE NEW ORDER LOGIC ---
+let newOrderItems = [];
+
+function openTakeOrderModal() {
+  newOrderItems = [];
+  updateNewOrderUI();
+  
+  const select = document.getElementById('modalItemSelect');
+  select.innerHTML = allMenuItems.map(item => `
+    <option value="${item.id}" data-price="${item.price}" data-name="${item.item_name}">${item.item_name} - ₹${item.price}</option>
+  `).join('');
+  
+  document.getElementById('takeOrderModal').style.display = 'flex';
+}
+
+function closeTakeOrderModal() {
+  document.getElementById('takeOrderModal').style.display = 'none';
+}
+
+function toggleTableInput() {
+  const type = document.getElementById('newOrderType').value;
+  const group = document.getElementById('tableInputGroup');
+  group.style.display = type === 'Dine-in' ? 'block' : 'none';
+}
+
+function addItemToNewOrder() {
+  const select = document.getElementById('modalItemSelect');
+  const qty = parseInt(document.getElementById('modalItemQty').value);
+  const selectedOption = select.options[select.selectedIndex];
+  
+  if (!selectedOption) return;
+  
+  const id = parseInt(selectedOption.value);
+  const name = selectedOption.dataset.name;
+  const price = parseFloat(selectedOption.dataset.price);
+  
+  const existing = newOrderItems.find(i => i.id === id);
+  if (existing) {
+    existing.quantity += qty;
+  } else {
+    newOrderItems.push({ id, name, price, quantity: qty });
+  }
+  
+  updateNewOrderUI();
+}
+
+function updateNewOrderUI() {
+  const list = document.getElementById('newOrderItemsList');
+  const totalDisplay = document.getElementById('newOrderTotal');
+  
+  if (newOrderItems.length === 0) {
+    list.innerHTML = '<p style="text-align:center; color: var(--text-muted); font-size: 0.9rem;">No items added yet</p>';
+    totalDisplay.textContent = '₹0.00';
+    return;
+  }
+  
+  let total = 0;
+  list.innerHTML = newOrderItems.map((item, index) => {
+    total += item.price * item.quantity;
+    return `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <span>${item.quantity}x ${item.name}</span>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="color: var(--text-muted);">₹${(item.price * item.quantity).toFixed(2)}</span>
+          <button onclick="removeNewOrderItem(${index})" style="background:none; border:none; color:var(--danger); cursor:pointer;">×</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  totalDisplay.textContent = `₹${total.toFixed(2)}`;
+}
+
+function removeNewOrderItem(index) {
+  newOrderItems.splice(index, 1);
+  updateNewOrderUI();
+}
+
+async function submitNewOrder() {
+  if (newOrderItems.length === 0) {
+    alert('Please add at least one item');
+    return;
+  }
+  
+  const type = document.getElementById('newOrderType').value;
+  const table = type === 'Parcel' ? 'Parcel' : (document.getElementById('newOrderTable').value || 'TBD');
+  const customer = document.getElementById('newOrderCustomer').value.trim();
+  
+  const total = newOrderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  
+  const orderData = {
+    table_number: table,
+    customer_name: customer,
+    order_type: type,
+    items: newOrderItems.map(item => ({
+      id: item.id,
+      quantity: item.quantity,
+      price: item.price
+    })),
+    total_amount: total
+  };
+
+  try {
+    const response = await fetch(`${API_BASE}/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData)
+    });
+    
+    const result = await response.json();
+    if (result.success) {
+      closeTakeOrderModal();
+      switchSection('orders'); // Jump to orders page to see the new order
+      loadOrders();
+    } else {
+      alert('Error: ' + result.message);
+    }
+  } catch (error) {
+    alert('Server error');
+  }
 }
 
 // --- QUICK ADD (ADD-ON) LOGIC ---

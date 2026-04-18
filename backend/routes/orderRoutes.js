@@ -5,7 +5,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 /* GUEST: PLACE NEW ORDER */
 router.post('/', async (req, res) => {
-  const { table_number, items, total_amount } = req.body;
+  const { table_number, items, total_amount, customer_name, order_type } = req.body;
 
   if (!table_number || !items || items.length === 0) {
     return res.status(400).json({ success: false, message: 'Invalid order data' });
@@ -18,8 +18,8 @@ router.post('/', async (req, res) => {
 
     // 1. Insert into orders table
     const [orderResult] = await connection.query(
-      'INSERT INTO orders (table_number, total_amount) VALUES (?, ?)',
-      [table_number, total_amount]
+      'INSERT INTO orders (table_number, total_amount, customer_name, order_type) VALUES (?, ?, ?, ?)',
+      [table_number, total_amount, customer_name || null, order_type || 'Dine-in']
     );
 
     const orderId = orderResult.insertId;
@@ -69,6 +69,8 @@ router.get('/admin/all', authMiddleware, async (req, res) => {
     SELECT 
       o.id, 
       o.table_number, 
+      o.customer_name,
+      o.order_type,
       o.total_amount, 
       o.status, 
       o.created_at,

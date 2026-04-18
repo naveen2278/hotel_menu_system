@@ -185,10 +185,11 @@ window.onclick = function(event) {
 
 // Place Order
 document.getElementById('placeOrderBtn').addEventListener('click', async () => {
+  const customerName = document.getElementById('customerName').value.trim();
   const tableNum = document.getElementById('tableNumber').value.trim();
   const statusEl = document.getElementById('orderStatus');
 
-  if (!tableNum) {
+  if (selectedOrderType === 'Dine-in' && !tableNum) {
     statusEl.textContent = 'Please enter your table number.';
     statusEl.style.color = 'var(--danger)';
     return;
@@ -197,7 +198,9 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   
   const orderData = {
-    table_number: tableNum,
+    table_number: tableNum || 'Parcel',
+    customer_name: customerName,
+    order_type: selectedOrderType || 'Dine-in',
     total_amount: total,
     items: cart.map(item => ({
       id: item.id,
@@ -228,6 +231,7 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
         toggleCartModal();
         statusEl.textContent = '';
         document.getElementById('tableNumber').value = '';
+        document.getElementById('customerName').value = '';
       }, 3000);
     } else {
       statusEl.textContent = result.message || 'Failed to place order.';
@@ -260,7 +264,25 @@ document.querySelectorAll('.filter-btn').forEach(button => {
 // INITIALIZE
 fetchMenu();
 
-// --- SPLASH SCREEN AUTO-HIDE (3 SECONDS) ---
+// --- SPLASH SCREEN & ENTRY LOGIC ---
+let selectedOrderType = '';
+
+function selectOrderType(type) {
+  selectedOrderType = type;
+  document.getElementById('entry-selection').style.display = 'none';
+  document.querySelector('.site-wrapper').style.display = 'block';
+  
+  // Update table number field relevance
+  const tableField = document.getElementById('tableNumber').closest('.form-group');
+  if (type === 'Parcel') {
+    tableField.style.display = 'none';
+    document.getElementById('tableNumber').removeAttribute('required');
+  } else {
+    tableField.style.display = 'block';
+    document.getElementById('tableNumber').setAttribute('required', 'true');
+  }
+}
+
 window.addEventListener('load', () => {
   const splash = document.getElementById('splash-screen');
   if (splash) {
@@ -269,7 +291,10 @@ window.addEventListener('load', () => {
       splash.style.visibility = 'hidden';
       setTimeout(() => {
         splash.style.display = 'none';
-      }, 1000); // Allow time for CSS transition
+        // Show selection screen after splash
+        const entry = document.getElementById('entry-selection');
+        entry.style.display = 'flex';
+      }, 1000); 
     }, 3000); 
   }
 });

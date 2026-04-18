@@ -1,15 +1,15 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const mysql = require('mysql2');
-require('dotenv').config();
 
 const db = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'hotel_menu_system',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  // Enable support for multiple statements if needed in the future
   multipleStatements: true
 });
 

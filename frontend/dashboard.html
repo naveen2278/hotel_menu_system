@@ -18,6 +18,9 @@
       <div style="display: flex; gap: 15px;">
         <button id="showMenuBtn" class="filter-btn active" onclick="switchSection('menu')">Menu</button>
         <button id="showOrdersBtn" class="filter-btn" onclick="switchSection('orders')">Orders</button>
+        <button id="takeParcelBtnHeader" class="filter-btn parcel-btn-header" onclick="openTakeOrderModal()" style="display: flex; align-items: center; gap: 8px;">
+          <span>🛍️</span> Parcel Order
+        </button>
       </div>
       <button id="logoutBtn" class="logout-btn">Logout</button>
     </header>
@@ -199,6 +202,62 @@
           <button type="button" class="small-btn edit-btn" onclick="closeQuickAdd()" style="padding: 12px 20px;">Cancel</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Take Order Modal -->
+  <div id="takeOrderModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2>🛍️ Take New Order</h2>
+        <button class="close-btn" onclick="closeTakeOrderModal()">&times;</button>
+      </div>
+      
+      <div style="padding: 20px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+          <div class="form-group">
+            <label>Order Type</label>
+            <select id="newOrderType" onchange="toggleTableInput()" style="width:100%; padding:10px; background:#1e293b; color:white; border-radius:8px; border:1px solid #334155;">
+              <option value="Parcel">Parcel</option>
+              <option value="Dine-in">Dine-in</option>
+            </select>
+          </div>
+          <div class="form-group" id="tableInputGroup" style="display:none;">
+            <label>Table Number</label>
+            <input type="text" id="newOrderTable" placeholder="e.g. 05" style="width:100%; padding:10px; background:#1e293b; color:white; border-radius:8px; border:1px solid #334155;" />
+          </div>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label>Customer Name / Phone (Optional)</label>
+          <input type="text" id="newOrderCustomer" placeholder="e.g. John Doe" style="width:100%; padding:10px; background:#1e293b; color:white; border-radius:8px; border:1px solid #334155;" />
+        </div>
+
+        <div style="border: 1px solid #334155; border-radius: 12px; padding: 15px; background: rgba(0,0,0,0.2);">
+          <label style="display:block; margin-bottom:10px; font-weight:600;">Select Items</label>
+          <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <select id="modalItemSelect" style="flex:1; padding:10px; background:#1e293b; color:white; border-radius:8px; border:1px solid #334155;">
+              <!-- Populated by JS -->
+            </select>
+            <input type="number" id="modalItemQty" value="1" min="1" style="width:70px; padding:10px; background:#1e293b; color:white; border-radius:8px; border:1px solid #334155;" />
+            <button class="primary-btn" onclick="addItemToNewOrder()" style="padding: 0 15px;">Add</button>
+          </div>
+          
+          <div id="newOrderItemsList" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+            <p style="text-align:center; color: var(--text-muted); font-size: 0.9rem;">No items added yet</p>
+          </div>
+          
+          <div style="display:flex; justify-content: space-between; align-items: center; border-top: 1px solid #334155; padding-top: 10px;">
+            <span style="font-weight:600;">Total Amount:</span>
+            <span id="newOrderTotal" style="font-size: 1.4rem; font-weight: 800; color: var(--primary);">₹0.00</span>
+          </div>
+        </div>
+
+        <div style="display:flex; gap: 15px; margin-top: 25px;">
+          <button class="primary-btn" onclick="submitNewOrder()" style="flex:2;">Place Order</button>
+          <button class="cancel-btn" onclick="closeTakeOrderModal()" style="flex:1;">Cancel</button>
+        </div>
+      </div>
     </div>
   </div>
 

@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Premium Hotel Menu System",
   "scripts": {
-    "start": "cd backend && npm start",
+    "build": "cd backend && npm install",
+    "start": "node backend/server.js",
     "setup": "cd backend && node setup.js"
   },
   "keywords": [],

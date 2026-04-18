@@ -1,0 +1,6 @@
+[build]
+  publish = "."
+
+# For a multi-page site (index.html, admin.html, dashboard.html), 
+# we should NOT have a catch-all redirect to index.html.
+# This ensures that visiting /admin.html actually loads admin.html.

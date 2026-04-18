@@ -19,7 +19,8 @@ app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Serve frontend static files
-app.use(express.static(path.join(__dirname, '../frontend')));
+app.use('/frontend', express.static(path.join(__dirname, '../frontend')));
+app.use(express.static(path.join(__dirname, '..'))); // Serve root for index.html
 
 // Routes
 app.use('/api/auth', authRoutes);
